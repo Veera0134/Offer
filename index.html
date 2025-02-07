@@ -1,0 +1,193 @@
+\<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate Location Selection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .form-container {
+      background: #ffffff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    select, input[type="text"], input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    .card-container {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .card button:hover {
+      background-color: #218838;
+    }
+  </style>
+  <script>
+    function syncLocationSelections() {
+      const locations = document.querySelectorAll('select[name="location"]');
+      locations.forEach(select => {
+        select.addEventListener('change', () => {
+          const selectedValue = select.value;
+          locations.forEach(otherSelect => {
+            if (otherSelect !== select) {
+              Array.from(otherSelect.options).forEach(option => {
+                option.disabled = option.value === selectedValue && selectedValue !== "";
+              });
+            }
+          });
+        });
+      });
+    }
+
+    function validateName() {
+      const nameField = document.getElementById("candidateName");
+      const namePattern = /^[A-Z][a-zA-Z ]*$/;
+      if (!namePattern.test(nameField.value)) {
+        alert("Name must start with a capital letter and contain only alphabets and spaces.");
+        nameField.focus();
+        return false;
+      }
+      return true;
+    }
+
+    function saveDataToLocalStorage(event) {
+      event.preventDefault();
+      if (!validateName()) return;
+
+      const name = document.getElementById("candidateName").value;
+      const locations = Array.from(document.querySelectorAll('select[name="location"]'))
+        .map(select => select.value);
+
+      const candidateData = { name, locations };
+      let candidates = JSON.parse(localStorage.getItem("candidates")) || [];
+      candidates.push(candidateData);
+      localStorage.setItem("candidates", JSON.stringify(candidates));
+
+      document.querySelector("form").reset();
+      renderCards();
+    }
+
+    function renderCards() {
+      const cardContainer = document.querySelector(".card-container");
+      cardContainer.innerHTML = "";
+
+      const candidates = JSON.parse(localStorage.getItem("candidates")) || [];
+      candidates.forEach((candidate, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const cardContent = document.createElement("div");
+        cardContent.textContent = `${candidate.name}: ${candidate.locations.join(", ")}`;
+
+        const offerButton = document.createElement("button");
+        offerButton.textContent = "Generate Offer Letter";
+        offerButton.onclick = () => {
+          alert(`Offer letter generated for ${candidate.name}`);
+          window.location.href = "offerletter2.html";
+        };
+
+        card.appendChild(cardContent);
+        card.appendChild(offerButton);
+        cardContainer.appendChild(card);
+      });
+    }
+
+    window.onload = function () {
+      syncLocationSelections();
+      renderCards();
+    };
+  </script>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Candidate Location Selection Form</h2>
+    <form onsubmit="saveDataToLocalStorage(event)">
+      <label for="candidateName">Candidate Name:</label>
+      <input type="text" id="candidateName" name="candidateName" placeholder="Enter your full name" required>
+
+      <label for="location1">Preferred Location 1:</label>
+      <select id="location1" name="location" required>
+        <option value="">-- Select Location --</option>
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Bangalore">Bangalore</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Pune">Pune</option>
+        <option value="Delhi">Delhi</option>
+      </select>
+
+      <label for="location2">Preferred Location 2:</label>
+      <select id="location2" name="location" required>
+        <option value="">-- Select Location --</option>
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Bangalore">Bangalore</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Pune">Pune</option>
+        <option value="Delhi">Delhi</option>
+      </select>
+
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+
+  <div class="card-container"></div>
+</body>
+</html>
